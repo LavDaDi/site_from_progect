@@ -1,2 +1,1 @@
-# site_from_progect
-site_from_progect
+Readme file of client part of our project
