@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name = 'viewport' content= 'width = device-width' initial-scale='1.0' maximum-scale='1.0' user-scalable='no'>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,300,600' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="style.css">
+    <script src="/socket.io/socket.io.js"></script>
+    <title>Detaction</title>
+</head>
+<body>
+    <div class="container"> 
+        <header class="qwerty">
+            <div class="header_detaction_icon">
+                <img class="header_detaction_icon_img" src="Images/Ico.png" alt="">
+            </div>
+        </header> 
+        <div class="main">
+            <div class="main_recognized_signs">
+                <div class="main_recognized_signs_block"></div>
+                <div class="main_recognized_signs_block"></div>
+                <div class="main_recognized_signs_block"></div>
+            </div>
+            <div class="main_video_stream main_style_stream" id="stream_link">
+                <video src="" id="video" autoplay="true" hidden></video>
+                <canvas id="preview" ></canvas>
+            </div>
+            <div class="main_confegurations">
+                <select class="config" name="select" >
+                    <option disabled selected hidden>Internal Webcam</option>
+                    <option value="s2">front-camera</option>
+                    <option value="s3">back-camera</option>
+                   </select>
+                <input id="input_link" type="text" class="config" placeholder=" External Camera">
+            </div>
+        </div>
+
+        <footer class="footer_detaction">
+            <div class="footer_buttons">
+                <button class="footer_button_start_and_stop" id="btn">Start AI</button>
+                <button class="footer_button_start_and_stop" id="footer_buttont_stopAI">Stop AI</button>
+            </div>
+            <header class="header_detaction">
+                <div class="header_detaction_icon">
+                    <img class="header_detaction_icon_img" src="Images/Ico.png" alt="">
+                </div>
+            </header>
+        </footer>
+    </div> 
+
+    <script>
+
+        var canvas = document.querySelector('#preview');
+        var context = canvas.getContext('2d');
+        var btn = document.querySelector('#btn');
+
+        canvas.width = 320;
+        canvas.height = 208;
+        
+
+        context.width = canvas.width;
+        context.height = canvas.height;
+
+        var video = document.querySelector('#video');
+
+        var socket = io();
+
+        function publicarMensaje(msg){
+            document.querySelector('.status').innerText = msq;
+        }
+
+        function loadCamara(stream){
+            video.srcObject = stream;
+            publicarMensaje('camara finc')
+        }
+
+        function errorCamara(){
+            publicarMensaje('camara err')
+        }
+
+        function verVideo(video, context){
+            context.drawImage(video, 0,0, context.width, context.height);
+            socket.emit('stream', canvas.toDataURL('image/webp'));
+        }
+
+        btn.addEventListener('click', () =>{
+            navigator.getUserMedia = (navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msgGetUserMedia);
+
+            if(navigator.getUserMedia){
+                navigator.getUserMedia({video:true}, loadCamara, errorCamara)
+            }
+
+            var intervalo = setInterval(() => {
+                verVideo(video, context);
+            }, 300);
+        })
+
+///////////////////////
+        document.querySelector('#footer_buttont_startAI').onclick = startingAi;
+        function startingAi(){
+            document.querySelector('#stream_link').innerHTML = '';
+            var img = [document.querySelector('#input_link').value];
+
+            document.querySelectorAll('#stream_link').forEach((el,i)=>el.insertAdjacentHTML('beforeend', '<img src="'+img[i]+'" class="main_style_stream">'));
+            const mimg = img   //document.createElement("test_img.jpeg");
+
+            const xhr = new XMLHttpRequest();
+            //mimg.setAttribute('src', 'test_img.jpeg');
+            // POST-запрос к ресурсу /user
+            xhr.open("POST", '/mimg');
+
+            
+            // обработчик получения ответа сервера
+            xhr.onload = () => {
+                if (xhr.status == 200) { 
+                    console.log(xhr.responseText);
+                } else {
+                    console.log("Server response: ", xhr.statusText);
+                }
+            }; 
+                // отправляем значение user в методе send
+            xhr.send(mimg); 
+        };
+
+        document.querySelector('#footer_buttont_stopAI').onclick = stopAi;
+        function stopAi(){
+        document.querySelector('#stream_link').innerHTML = '';
+        }
+    </script>  
+</body>
+</html>
